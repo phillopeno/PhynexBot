@@ -4,7 +4,7 @@ import org.phynex.discord.Controller;
 import org.phynex.discord.module.commands.Command;
 import org.phynex.discord.module.commands.CommandEntry;
 import org.phynex.discord.module.commands.EventType;
-import org.phynex.discord.module.commands.annotations.CommandMeta;
+import org.phynex.discord.module.commands.annotations.CommandAnnotation;
 import org.phynex.discord.routing.GuildRouting;
 import org.phynex.discord.routing.PrivateRouting;
 import org.reflections.Reflections;
@@ -26,12 +26,12 @@ public class CommandModule {
         Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
         classes.stream()
                 .filter(Predicate.not(Class::isAnonymousClass))
-                .filter(c -> c.isAnnotationPresent(CommandMeta.class))
+                .filter(c -> c.isAnnotationPresent(CommandAnnotation.class))
                 .forEach(c -> {
                     try {
                         Object instance = c.getDeclaredConstructor().newInstance();
                         if (instance instanceof Command) {
-                            CommandMeta metadata = c.getAnnotation(CommandMeta.class);
+                            CommandAnnotation metadata = c.getAnnotation(CommandAnnotation.class);
                             commands.add(new CommandEntry((Class<Command>) c, metadata));
                         }
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {

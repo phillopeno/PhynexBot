@@ -1,14 +1,14 @@
 package org.phynex.discord.module.commands;
 
-import org.phynex.discord.module.commands.annotations.CommandMeta;
+import org.phynex.discord.module.commands.annotations.CommandAnnotation;
 
 public class CommandEntry {
 
     private final Class<Command> command;
 
-    private final CommandMeta metadata;
+    private final CommandAnnotation metadata;
 
-    public CommandEntry(Class<Command> command, CommandMeta metadata) {
+    public CommandEntry(Class<Command> command, CommandAnnotation metadata) {
         this.command = command;
         this.metadata = metadata;
     }
@@ -17,7 +17,7 @@ public class CommandEntry {
         return command;
     }
 
-    public CommandMeta getMetadata() {
+    public CommandAnnotation getMetadata() {
         return metadata;
     }
 }
