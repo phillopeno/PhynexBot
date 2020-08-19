@@ -1,4 +1,4 @@
-package org.phynex.discord.events.commands;
+package org.phynex.discord.module.commands;
 
 public enum EventType {
 

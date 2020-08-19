@@ -17,4 +17,11 @@ public class Controller {
     public static Session getSession() {
         return session;
     }
+
+    private static boolean DEBUG_MODE = true;
+
+    public static void debug(String string, Object... args) {
+        if (DEBUG_MODE)
+            System.out.printf("[SYSTEM DEBUG] " + string + "%n", args);
+    }
 }

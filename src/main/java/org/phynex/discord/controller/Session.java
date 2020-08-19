@@ -5,10 +5,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import org.phynex.discord.events.DirectMessageHandler;
-import org.phynex.discord.events.GuildMessageHandler;
-import org.phynex.discord.events.GuildMessageReactionHandler;
-import org.phynex.discord.events.MessageReactionHandler;
+import org.phynex.discord.listener.GuildReactionListener;
 
 import javax.security.auth.login.LoginException;
 
@@ -20,10 +17,7 @@ public class Session {
      * todo some type of reflection solution to make this dynamically pull from events package
      */
     Object[] handlers = {
-            new GuildMessageHandler(),
-            new DirectMessageHandler(),
-            //new MessageReactionHandler(),
-            new GuildMessageReactionHandler()
+            new GuildReactionListener()
     };
 
     public Session(String token) {
@@ -36,8 +30,12 @@ public class Session {
                     GatewayIntent.GUILD_EMOJIS,
                     GatewayIntent.GUILD_PRESENCES,
                     GatewayIntent.GUILD_BANS,
+                    GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                    GatewayIntent.GUILD_INVITES,
+                    //GatewayIntent.GUILD_MESSAGE_TYPING,
 
                     GatewayIntent.DIRECT_MESSAGES,
+                    //GatewayIntent.DIRECT_MESSAGE_TYPING,
                     GatewayIntent.DIRECT_MESSAGE_REACTIONS
             )
                     .disableCache(CacheFlag.EMOTE, CacheFlag.VOICE_STATE)
