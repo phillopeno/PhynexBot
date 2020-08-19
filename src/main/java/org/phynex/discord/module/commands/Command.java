@@ -62,6 +62,12 @@ public abstract class Command {
         this.guildEvent = guildRouting.getGuildEvent();
     }
 
+    public void setup(EventType eventType, PrivateRouting privateRouting) {
+        this.instanceType = eventType;
+        this.owner = privateRouting.getPrivateEvent().getUser().getIdLong();
+        this.privateEvent = privateRouting.getPrivateEvent();
+    }
+
     public abstract boolean processIncomingRequest(GuildRouting guildRouting);
 
     public abstract boolean processIncomingRequest(PrivateRouting privateRouting);

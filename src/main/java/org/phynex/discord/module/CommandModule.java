@@ -2,7 +2,6 @@ package org.phynex.discord.module;
 
 import org.phynex.discord.Controller;
 import org.phynex.discord.module.commands.Command;
-import org.phynex.discord.module.commands.CommandEntry;
 import org.phynex.discord.module.commands.EventType;
 import org.phynex.discord.module.commands.annotations.CommandAnnotation;
 import org.phynex.discord.routing.GuildRouting;
@@ -10,36 +9,27 @@ import org.phynex.discord.routing.PrivateRouting;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class CommandModule {
 
     private final HashMap<Long, Command> pendingGuildCommands, pendingPrivateCommands;
-    private final List<CommandEntry> commands;
+    private Map<Class<? extends Command>, CommandAnnotation> commands;
 
     public CommandModule() {
         this.pendingGuildCommands = new HashMap<>();
         this.pendingPrivateCommands = new HashMap<>();
-        this.commands = new ArrayList<>();
-        initializeCommands();
+        init();
     }
 
-    /**
-     * Dynamically load all commands with proper annotations
-     */
-    private void initializeCommands() {
+    private void init() {
         Reflections reflections = new Reflections("org.phynex.discord.module.commands.impl");
         Set<Class<? extends Command>> classes = reflections.getSubTypesOf(Command.class);
-        classes.stream()
+        commands = classes.stream()
                 .filter(c -> c.isAnnotationPresent(CommandAnnotation.class))
-                .map(c -> {
-                    CommandAnnotation metadata = c.getAnnotation(CommandAnnotation.class);
-                    return new CommandEntry(c, metadata);
-                })
-                .forEach(commands::add);
+                .collect(Collectors.toMap(Function.identity(), c -> c.getAnnotation(CommandAnnotation.class)));
     }
 
     public boolean processIncomingMessage(GuildRouting guildRouting) {
@@ -70,26 +60,27 @@ public class CommandModule {
         return processCommand(privateRouting);
     }
 
-    private CommandEntry find(String key) {
-        for (CommandEntry command : commands) {
-            for (String keyword : command.getMetadata().keywords()) {
-                if (keyword.equalsIgnoreCase(key)) {
-                    return command;
-                }
-            }
-        }
-        return null;
+    private Optional<Map.Entry<Class<? extends Command>, CommandAnnotation>> find(String key) {
+         return commands.entrySet()
+                .stream()
+                .filter(entrySet -> Arrays.stream(entrySet.getValue().keywords())
+                        .anyMatch(key::equalsIgnoreCase)
+                ).findFirst();
     }
 
     private boolean processCommand(GuildRouting guildRouting) {
-        CommandEntry entry = find(guildRouting.getGuildEvent().getMessage().getContentRaw().split(" ")[0].replace("!", ""));
-        if (entry != null) {
+        String key = guildRouting.getGuildEvent()
+                .getMessage().getContentRaw().split(" ")[0].replace("!", "");
+
+        Class<? extends Command> command = find(key).map(Map.Entry::getKey).orElse(null);
+        if (command != null) {
             try {
-                Command command = entry.getCommand().getDeclaredConstructor().newInstance();
-                command.setup(EventType.GUILD, guildRouting);
-                command.processIncomingRequest(guildRouting);
+                Command instance = command.getDeclaredConstructor().newInstance();
+                instance.setup(EventType.GUILD, guildRouting);
+                instance.processIncomingRequest(guildRouting);
                 return true;
-            } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            } catch (NoSuchMethodException | InstantiationException |
+                    IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
@@ -97,6 +88,23 @@ public class CommandModule {
     }
 
     private boolean processCommand(PrivateRouting privateRouting) {
+        String key = privateRouting.getPrivateEvent()
+                .getMessage().getContentRaw().split(" ")[0].replace("!", "");
+
+        Class<? extends Command> command = find(key).map(Map.Entry::getKey).orElse(null);
+        if (command != null) {
+            try {
+                Command instance = command.getDeclaredConstructor().newInstance();
+                instance.setup(EventType.PRIVATE, privateRouting);
+
+                instance.setup(EventType.GUILD, privateRouting);
+                instance.processIncomingRequest(privateRouting);
+                return true;
+            } catch (NoSuchMethodException | InstantiationException |
+                    IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        }
         return false;
     }
 }
