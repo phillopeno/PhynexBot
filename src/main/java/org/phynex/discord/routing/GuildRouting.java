@@ -29,10 +29,6 @@ public class GuildRouting {
         guildMessageEvent = null;
     }
 
-    public GuildMessageEvent getGuildEvent() {
-        return guildMessageEvent;
-    }
-
     public RoutingEvent getRoutingEvent() {
         return routingEvent;
     }

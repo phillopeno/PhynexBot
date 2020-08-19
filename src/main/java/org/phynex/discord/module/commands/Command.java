@@ -1,6 +1,7 @@
 package org.phynex.discord.module.commands;
 
 import org.phynex.discord.controller.exceptions.InvalidRequestException;
+import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
 import org.phynex.discord.routing.GuildRouting;
 import org.phynex.discord.routing.PrivateRouting;
 import org.phynex.discord.routing.serializable.GuildMessageEvent;
@@ -56,16 +57,20 @@ public abstract class Command {
         return timeout;
     }
 
-    public void setup(EventType eventType, GuildRouting guildRouting) {
+    public void setup(EventType eventType, GuildRouting guildRouting) throws UnexpectedOutcomeException {
         this.instanceType = eventType;
-        this.owner = guildRouting.getGuildEvent().getUser().getIdLong();
-        this.guildMessageEvent = guildRouting.getGuildEvent();
+        this.owner = guildRouting.getGuildMessageEvent()
+                .orElseThrow(UnexpectedOutcomeException::new).getUser().getIdLong();
+        this.guildMessageEvent = guildRouting.getGuildMessageEvent()
+                .orElseThrow(UnexpectedOutcomeException::new);
     }
 
-    public void setup(EventType eventType, PrivateRouting privateRouting) {
+    public void setup(EventType eventType, PrivateRouting privateRouting) throws UnexpectedOutcomeException {
         this.instanceType = eventType;
-        this.owner = privateRouting.getPrivateEvent().getUser().getIdLong();
-        this.privateMessageEvent = privateRouting.getPrivateEvent();
+        this.owner = privateRouting.getPrivateMessageEvent()
+                .orElseThrow(UnexpectedOutcomeException::new).getUser().getIdLong();
+        this.privateMessageEvent = privateRouting.getPrivateMessageEvent()
+                .orElseThrow(UnexpectedOutcomeException::new);
     }
 
     public abstract boolean processIncomingMessage(GuildRouting guildRouting);
@@ -73,4 +78,6 @@ public abstract class Command {
     public abstract boolean processIncomingMessage(PrivateRouting privateRouting);
 
     public abstract boolean processIncomingReaction(GuildRouting guildRouting);
+
+    public abstract boolean processIncomingReaction(PrivateRouting privateRouting);
 }

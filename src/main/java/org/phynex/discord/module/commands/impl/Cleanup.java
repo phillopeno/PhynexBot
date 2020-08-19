@@ -32,5 +32,10 @@ public class Cleanup extends Command {
         return false;
     }
 
+    @Override
+    public boolean processIncomingReaction(PrivateRouting privateRouting) {
+        return false;
+    }
+
 
 }
