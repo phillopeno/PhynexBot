@@ -1,16 +1,16 @@
 package org.phynex.discord.routing;
 
-import org.phynex.discord.routing.serializable.PrivateEvent;
+import org.phynex.discord.routing.serializable.PrivateMessageEvent;
 
 public class PrivateRouting {
 
-    private final PrivateEvent privateEvent;
+    private final PrivateMessageEvent privateMessageEvent;
 
-    public PrivateRouting(PrivateEvent privateEvent) {
-        this.privateEvent = privateEvent;
+    public PrivateRouting(PrivateMessageEvent privateMessageEvent) {
+        this.privateMessageEvent = privateMessageEvent;
     }
 
-    public PrivateEvent getPrivateEvent() {
-        return privateEvent;
+    public PrivateMessageEvent getPrivateEvent() {
+        return privateMessageEvent;
     }
 }

@@ -3,8 +3,8 @@ package org.phynex.discord.module.commands;
 import org.phynex.discord.controller.exceptions.InvalidRequestException;
 import org.phynex.discord.routing.GuildRouting;
 import org.phynex.discord.routing.PrivateRouting;
-import org.phynex.discord.routing.serializable.GuildEvent;
-import org.phynex.discord.routing.serializable.PrivateEvent;
+import org.phynex.discord.routing.serializable.GuildMessageEvent;
+import org.phynex.discord.routing.serializable.PrivateMessageEvent;
 
 public abstract class Command {
 
@@ -20,36 +20,36 @@ public abstract class Command {
      */
     protected long timeout;
 
-    private GuildEvent guildEvent;
+    private GuildMessageEvent guildMessageEvent;
 
-    private PrivateEvent privateEvent;
+    private PrivateMessageEvent privateMessageEvent;
 
     protected Command() {
         //
     }
 
-    protected Command(EventType instanceType, long owner, GuildEvent event) {
+    protected Command(EventType instanceType, long owner, GuildMessageEvent event) {
         this.instanceType = instanceType;
         this.owner = owner;
-        this.guildEvent = event;
+        this.guildMessageEvent = event;
     }
 
-    protected Command(EventType instanceType, long owner, PrivateEvent event) {
+    protected Command(EventType instanceType, long owner, PrivateMessageEvent event) {
         this.instanceType = instanceType;
         this.owner = owner;
-        this.privateEvent = event;
+        this.privateMessageEvent = event;
     }
 
-    protected GuildEvent getGuildEvent() throws InvalidRequestException {
+    protected GuildMessageEvent getGuildEvent() throws InvalidRequestException {
         if (instanceType == EventType.PRIVATE)
             throw new InvalidRequestException("Attempt to pull Guild Information from Private Message Event!");
-        return guildEvent;
+        return guildMessageEvent;
     }
 
-    protected PrivateEvent getPrivateEvent() throws InvalidRequestException {
+    protected PrivateMessageEvent getPrivateEvent() throws InvalidRequestException {
         if (instanceType == EventType.GUILD)
             throw new InvalidRequestException("Attempt to pull Private Information from Guild Message Event!");
-        return privateEvent;
+        return privateMessageEvent;
     }
 
     public long getTimeout() {
@@ -59,16 +59,18 @@ public abstract class Command {
     public void setup(EventType eventType, GuildRouting guildRouting) {
         this.instanceType = eventType;
         this.owner = guildRouting.getGuildEvent().getUser().getIdLong();
-        this.guildEvent = guildRouting.getGuildEvent();
+        this.guildMessageEvent = guildRouting.getGuildEvent();
     }
 
     public void setup(EventType eventType, PrivateRouting privateRouting) {
         this.instanceType = eventType;
         this.owner = privateRouting.getPrivateEvent().getUser().getIdLong();
-        this.privateEvent = privateRouting.getPrivateEvent();
+        this.privateMessageEvent = privateRouting.getPrivateEvent();
     }
 
-    public abstract boolean processIncomingRequest(GuildRouting guildRouting);
+    public abstract boolean processIncomingMessage(GuildRouting guildRouting);
 
-    public abstract boolean processIncomingRequest(PrivateRouting privateRouting);
+    public abstract boolean processIncomingMessage(PrivateRouting privateRouting);
+
+    public abstract boolean processIncomingReaction(GuildRouting guildRouting);
 }

@@ -15,12 +15,12 @@ import java.util.stream.Collectors;
 
 public class CommandModule {
 
-    private final HashMap<Long, Command> pendingGuildCommands, pendingPrivateCommands;
+    private final HashMap<Long, Command> guildCommandListeners, privateCommandListeners;
     private Map<Class<? extends Command>, CommandAnnotation> commands;
 
     public CommandModule() {
-        this.pendingGuildCommands = new HashMap<>();
-        this.pendingPrivateCommands = new HashMap<>();
+        this.guildCommandListeners = new HashMap<>();
+        this.privateCommandListeners = new HashMap<>();
         init();
     }
 
@@ -34,28 +34,28 @@ public class CommandModule {
 
     public boolean processIncomingMessage(GuildRouting guildRouting) {
         long uid = guildRouting.getGuildEvent().getUser().getIdLong();
-        Command command = pendingGuildCommands.get(uid);
+        Command command = guildCommandListeners.get(uid);
         if (command != null) {
             if (command.getTimeout() < System.currentTimeMillis()) {
-                pendingGuildCommands.remove(uid);
+                guildCommandListeners.remove(uid);
                 Controller.debug("[CommandModule] Guild command timed out.");
                 return processCommand(guildRouting);
             }
-            return command.processIncomingRequest(guildRouting);
+            return command.processIncomingMessage(guildRouting);
         }
         return processCommand(guildRouting);
     }
 
     public boolean processIncomingMessage(PrivateRouting privateRouting) {
         long uid = privateRouting.getPrivateEvent().getUser().getIdLong();
-        Command command = pendingPrivateCommands.get(uid);
+        Command command = privateCommandListeners.get(uid);
         if (command != null) {
             if (command.getTimeout() < System.currentTimeMillis()) {
-                pendingPrivateCommands.remove(uid);
+                privateCommandListeners.remove(uid);
                 Controller.debug("[CommandModule] Private command timed out.");
                 return processCommand(privateRouting);
             }
-            return command.processIncomingRequest(privateRouting);
+            return command.processIncomingMessage(privateRouting);
         }
         return processCommand(privateRouting);
     }
@@ -77,7 +77,7 @@ public class CommandModule {
             try {
                 Command instance = command.getDeclaredConstructor().newInstance();
                 instance.setup(EventType.GUILD, guildRouting);
-                instance.processIncomingRequest(guildRouting);
+                instance.processIncomingMessage(guildRouting);
                 return true;
             } catch (NoSuchMethodException | InstantiationException |
                     IllegalAccessException | InvocationTargetException e) {
@@ -98,7 +98,7 @@ public class CommandModule {
                 instance.setup(EventType.PRIVATE, privateRouting);
 
                 instance.setup(EventType.GUILD, privateRouting);
-                instance.processIncomingRequest(privateRouting);
+                instance.processIncomingMessage(privateRouting);
                 return true;
             } catch (NoSuchMethodException | InstantiationException |
                     IllegalAccessException | InvocationTargetException e) {
@@ -106,5 +106,33 @@ public class CommandModule {
             }
         }
         return false;
+    }
+
+    /**
+     * Redirect reaction event to command that is listening for it.
+     */
+    protected void addGuildReactionListener() {
+
+    }
+
+    /**
+     * Redirect reaction event to command that is listening for it.
+     */
+    protected void addPrivateReactionListener() {
+
+    }
+
+    /**
+     * Redirect message event to command that is listening for it.
+     */
+    protected void addGuildMessageListener() {
+
+    }
+
+    /**
+     * Redirect message event to command that is listening for it.
+     */
+    protected void addPrivateMessageListener() {
+
     }
 }

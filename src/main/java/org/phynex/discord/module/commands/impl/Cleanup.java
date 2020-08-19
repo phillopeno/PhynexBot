@@ -5,7 +5,7 @@ import org.phynex.discord.module.commands.EventType;
 import org.phynex.discord.module.commands.annotations.CommandAnnotation;
 import org.phynex.discord.routing.GuildRouting;
 import org.phynex.discord.routing.PrivateRouting;
-import org.phynex.discord.routing.serializable.GuildEvent;
+import org.phynex.discord.routing.serializable.GuildMessageEvent;
 
 @CommandAnnotation(
         keywords = { "clean", "cleanup", "purge" },
@@ -13,17 +13,22 @@ import org.phynex.discord.routing.serializable.GuildEvent;
 )
 public class Cleanup extends Command {
 
-    protected Cleanup(EventType instanceType, long owner, GuildEvent event) {
+    protected Cleanup(EventType instanceType, long owner, GuildMessageEvent event) {
         super(instanceType, owner, event);
     }
 
     @Override
-    public boolean processIncomingRequest(GuildRouting guildRouting) {
+    public boolean processIncomingMessage(GuildRouting guildRouting) {
         return false;
     }
 
     @Override
-    public boolean processIncomingRequest(PrivateRouting privateRouting) {
+    public boolean processIncomingMessage(PrivateRouting privateRouting) {
+        return false;
+    }
+
+    @Override
+    public boolean processIncomingReaction(GuildRouting guildRouting) {
         return false;
     }
 

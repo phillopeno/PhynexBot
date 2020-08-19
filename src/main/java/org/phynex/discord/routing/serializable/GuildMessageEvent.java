@@ -4,21 +4,17 @@ import net.dv8tion.jda.api.entities.*;
 
 import java.io.Serializable;
 
-public class GuildEvent implements Serializable {
+public class GuildMessageEvent implements Serializable {
 
     private final User user;
     private final Message message;
-    private final Guild guild;
     private final Member guildMember;
-    private final TextChannel guildTextChannel;
 
 
-    public GuildEvent(User user, Message message, Guild guild, Member guildMember, TextChannel guildTextChannel) {
+    public GuildMessageEvent(User user, Member guildMember, Message message) {
         this.user = user;
         this.message = message;
-        this.guild = guild;
         this.guildMember = guildMember;
-        this.guildTextChannel = guildTextChannel;
     }
 
     public User getUser() {
@@ -29,15 +25,7 @@ public class GuildEvent implements Serializable {
         return message;
     }
 
-    public Guild getGuild() {
-        return guild;
-    }
-
     public Member getGuildMember() {
         return guildMember;
-    }
-
-    public TextChannel getGuildTextChannel() {
-        return guildTextChannel;
     }
 }

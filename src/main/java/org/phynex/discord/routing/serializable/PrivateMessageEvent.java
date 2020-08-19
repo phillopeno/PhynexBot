@@ -4,13 +4,13 @@ import net.dv8tion.jda.api.entities.*;
 
 import java.io.Serializable;
 
-public class PrivateEvent implements Serializable {
+public class PrivateMessageEvent implements Serializable {
 
     private final User user;
     private final Message message;
 
 
-    public PrivateEvent(User user, Message message) {
+    public PrivateMessageEvent(User user, Message message) {
         this.user = user;
         this.message = message;
     }

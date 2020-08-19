@@ -5,24 +5,30 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.phynex.discord.listener.GuildMessageListener;
 import org.phynex.discord.listener.GuildReactionListener;
+import org.phynex.discord.listener.PrivateMessageListener;
+import org.phynex.discord.listener.PrivateMessageReactionListener;
 
 import javax.security.auth.login.LoginException;
 
 public class Session {
 
-    private JDA jda;
+    private JDA api;
 
     /**
      * todo some type of reflection solution to make this dynamically pull from events package
      */
     Object[] handlers = {
-            new GuildReactionListener()
+            new GuildReactionListener(),
+            new PrivateMessageReactionListener(),
+            new GuildMessageListener(),
+            new PrivateMessageListener()
     };
 
     public Session(String token) {
         try {
-            jda = JDABuilder.createDefault(
+            api = JDABuilder.createDefault(
                     token,
                     GatewayIntent.GUILD_MEMBERS,
                     GatewayIntent.GUILD_MESSAGES,
@@ -50,7 +56,7 @@ public class Session {
         }
     }
 
-    public JDA getJDA() {
-        return jda;
+    public JDA getAPI() {
+        return api;
     }
 }
