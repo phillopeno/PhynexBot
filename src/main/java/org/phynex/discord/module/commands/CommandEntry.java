@@ -4,16 +4,16 @@ import org.phynex.discord.module.commands.annotations.CommandAnnotation;
 
 public class CommandEntry {
 
-    private final Class<Command> command;
+    private final Class<? extends Command> command;
 
     private final CommandAnnotation metadata;
 
-    public CommandEntry(Class<Command> command, CommandAnnotation metadata) {
+    public CommandEntry(Class<? extends Command> command, CommandAnnotation metadata) {
         this.command = command;
         this.metadata = metadata;
     }
 
-    public Class<Command> getCommand() {
+    public Class<? extends Command> getCommand() {
         return command;
     }
 

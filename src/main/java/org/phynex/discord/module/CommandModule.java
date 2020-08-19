@@ -10,8 +10,10 @@ import org.phynex.discord.routing.PrivateRouting;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class CommandModule {
 
@@ -22,22 +24,22 @@ public class CommandModule {
         this.pendingGuildCommands = new HashMap<>();
         this.pendingPrivateCommands = new HashMap<>();
         this.commands = new ArrayList<>();
+        initializeCommands();
+    }
+
+    /**
+     * Dynamically load all commands with proper annotations
+     */
+    private void initializeCommands() {
         Reflections reflections = new Reflections("org.phynex.discord.module.commands.impl");
-        Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
+        Set<Class<? extends Command>> classes = reflections.getSubTypesOf(Command.class);
         classes.stream()
-                .filter(Predicate.not(Class::isAnonymousClass))
                 .filter(c -> c.isAnnotationPresent(CommandAnnotation.class))
-                .forEach(c -> {
-                    try {
-                        Object instance = c.getDeclaredConstructor().newInstance();
-                        if (instance instanceof Command) {
-                            CommandAnnotation metadata = c.getAnnotation(CommandAnnotation.class);
-                            commands.add(new CommandEntry((Class<Command>) c, metadata));
-                        }
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                        e.printStackTrace();
-                    }
-                });
+                .map(c -> {
+                    CommandAnnotation metadata = c.getAnnotation(CommandAnnotation.class);
+                    return new CommandEntry(c, metadata);
+                })
+                .forEach(commands::add);
     }
 
     public boolean processIncomingMessage(GuildRouting guildRouting) {
