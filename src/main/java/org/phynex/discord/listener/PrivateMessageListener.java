@@ -8,13 +8,22 @@ import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.phynex.discord.routing.EventRouter;
+import org.phynex.discord.routing.EventType;
+import org.phynex.discord.routing.PrivateEvent;
 import org.phynex.discord.routing.serializable.PrivateMessageEvent;
 
 public class PrivateMessageListener extends ListenerAdapter {
 
     @Override
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
-        new PrivateMessageEvent(event.getAuthor(), event.getMessage());
+        PrivateMessageEvent messageEvent = new PrivateMessageEvent(
+                event.getAuthor(), event.getMessage());
+        PrivateEvent privateEvent = new PrivateEvent(EventType.MESSAGE, messageEvent);
+
+        EventRouter.route(privateEvent);
+
+
     }
 
     /**

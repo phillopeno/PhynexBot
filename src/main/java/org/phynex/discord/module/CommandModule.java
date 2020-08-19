@@ -1,17 +1,17 @@
 package org.phynex.discord.module;
 
+import net.dv8tion.jda.api.entities.Message;
 import org.phynex.discord.Controller;
 import org.phynex.discord.controller.exceptions.InvalidRequestException;
 import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
 import org.phynex.discord.module.commands.Command;
 import org.phynex.discord.module.commands.EventType;
 import org.phynex.discord.module.commands.annotations.CommandAnnotation;
-import org.phynex.discord.routing.GuildRouting;
-import org.phynex.discord.routing.PrivateRouting;
+import org.phynex.discord.routing.GuildEvent;
+import org.phynex.discord.routing.PrivateEvent;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
-import java.rmi.UnexpectedException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,44 +35,44 @@ public class CommandModule {
                 .collect(Collectors.toMap(Function.identity(), c -> c.getAnnotation(CommandAnnotation.class)));
     }
 
-    private boolean route(Command command, GuildRouting guildRouting) {
-        switch (guildRouting.getRoutingEvent()) {
+    private boolean route(Command command, GuildEvent guildEvent) {
+        switch (guildEvent.getRoutingEvent()) {
             case MESSAGE:
-                return command.processIncomingMessage(guildRouting);
+                return command.processIncomingMessage(guildEvent);
             case REACTION:
-                return command.processIncomingReaction(guildRouting);
+                return command.processIncomingReaction(guildEvent);
             default:
                 //not supported
                 return false;
         }
     }
 
-    private boolean route(Command command, PrivateRouting privateRouting) {
-        switch (privateRouting.getRoutingEvent()) {
+    private boolean route(Command command, PrivateEvent privateEvent) {
+        switch (privateEvent.getRoutingEvent()) {
             case MESSAGE:
-                return command.processIncomingMessage(privateRouting);
+                return command.processIncomingMessage(privateEvent);
             case REACTION:
-                return command.processIncomingReaction(privateRouting);
+                return command.processIncomingReaction(privateEvent);
             default:
                 //not supported
                 return false;
         }
     }
 
-    public boolean processIncomingMessage(GuildRouting guildRouting) throws InvalidRequestException, UnexpectedOutcomeException {
+    public boolean processIncomingMessage(GuildEvent guildEvent) throws InvalidRequestException, UnexpectedOutcomeException {
         long uid;
-        switch (guildRouting.getRoutingEvent()) {
+        switch (guildEvent.getRoutingEvent()) {
             case MESSAGE:
-                uid = guildRouting.getGuildMessageEvent()
+                uid = guildEvent.getGuildMessageEvent()
                         .orElseThrow(InvalidRequestException::new).getUser().getIdLong();
                 break;
             case REACTION:
-                uid = guildRouting.getGuildReactionEvent()
+                uid = guildEvent.getGuildReactionEvent()
                         .orElseThrow(InvalidRequestException::new).getUser().getIdLong();
                 break;
             default:
                 Controller.debug("[Unexpected %s] %s",
-                        this.getClass().getName(), guildRouting.getRoutingEvent().name());
+                        this.getClass().getName(), guildEvent.getRoutingEvent().name());
                 return false;
         }
         Command command = guildCommandListeners.get(uid);
@@ -80,27 +80,27 @@ public class CommandModule {
             if (command.getTimeout() < System.currentTimeMillis()) {
                 guildCommandListeners.remove(uid);
                 Controller.debug("[CommandModule] Guild command timed out.");
-                return processCommand(guildRouting);
+                return processCommand(guildEvent);
             }
-            return route(command, guildRouting);
+            return route(command, guildEvent);
         }
-        return processCommand(guildRouting);
+        return processCommand(guildEvent);
     }
 
-    public boolean processIncomingMessage(PrivateRouting privateRouting) throws InvalidRequestException, UnexpectedOutcomeException {
+    public boolean processIncomingMessage(PrivateEvent privateEvent) throws InvalidRequestException, UnexpectedOutcomeException {
         long uid;
-        switch (privateRouting.getRoutingEvent()) {
+        switch (privateEvent.getRoutingEvent()) {
             case MESSAGE:
-                uid = privateRouting.getPrivateMessageEvent()
+                uid = privateEvent.getPrivateMessageEvent()
                         .orElseThrow(InvalidRequestException::new).getUser().getIdLong();
                 break;
             case REACTION:
-                uid = privateRouting.getPrivateReactionEvent()
+                uid = privateEvent.getPrivateReactionEvent()
                         .orElseThrow(InvalidRequestException::new).getUser().getIdLong();
                 break;
             default:
                 Controller.debug("[Unexpected %s] %s",
-                        this.getClass().getName(), privateRouting.getRoutingEvent().name());
+                        this.getClass().getName(), privateEvent.getRoutingEvent().name());
                 return false;
         }
         Command command = privateCommandListeners.get(uid);
@@ -108,11 +108,11 @@ public class CommandModule {
             if (command.getTimeout() < System.currentTimeMillis()) {
                 privateCommandListeners.remove(uid);
                 Controller.debug("[CommandModule] Private command timed out.");
-                return processCommand(privateRouting);
+                return processCommand(privateEvent);
             }
-            return route(command, privateRouting);
+            return route(command, privateEvent);
         }
-        return processCommand(privateRouting);
+        return processCommand(privateEvent);
     }
 
     private Optional<Map.Entry<Class<? extends Command>, CommandAnnotation>> find(String key) {
@@ -123,47 +123,53 @@ public class CommandModule {
                 ).findFirst();
     }
 
-    private boolean processCommand(GuildRouting guildRouting) throws UnexpectedOutcomeException {
-        if (guildRouting.getGuildMessageEvent().isEmpty())
+    private String getKey(Message message) {
+        String msg = message.getContentRaw();
+        if (!msg.startsWith("!"))
+            return null;
+        return message.getContentRaw().split(" ")[0].replace("!", "");
+    }
+
+    private boolean processCommand(GuildEvent guildEvent) throws UnexpectedOutcomeException {
+        if (guildEvent.getGuildMessageEvent().isEmpty())
             return false;
-
-        String key = guildRouting.getGuildMessageEvent().orElseThrow(UnexpectedOutcomeException::new)
-                .getMessage().getContentRaw().split(" ")[0].replace("!", "");
-
-        Class<? extends Command> command = find(key).map(Map.Entry::getKey).orElse(null);
-        if (command != null) {
-            try {
-                Command instance = command.getDeclaredConstructor().newInstance();
-                instance.setup(EventType.GUILD, guildRouting);
-                //instance.processIncomingMessage(guildRouting);
-                return route(instance, guildRouting);
-            } catch (NoSuchMethodException | InstantiationException |
-                    IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+        String key = getKey(guildEvent.getGuildMessageEvent()
+                .orElseThrow(UnexpectedOutcomeException::new).getMessage());
+        if (key != null) {
+            Class<? extends Command> command = find(key).map(Map.Entry::getKey).orElse(null);
+            if (command != null) {
+                try {
+                    Command instance = command.getDeclaredConstructor().newInstance();
+                    instance.setup(EventType.GUILD, guildEvent);
+                    //instance.processIncomingMessage(guildRouting);
+                    return route(instance, guildEvent);
+                } catch (NoSuchMethodException | InstantiationException |
+                        IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return false;
     }
 
-    private boolean processCommand(PrivateRouting privateRouting) throws UnexpectedOutcomeException {
-        if (privateRouting.getPrivateMessageEvent().isEmpty())
+    private boolean processCommand(PrivateEvent privateEvent) throws UnexpectedOutcomeException {
+        if (privateEvent.getPrivateMessageEvent().isEmpty())
             return false;
-
-        String key = privateRouting.getPrivateMessageEvent().orElseThrow(UnexpectedOutcomeException::new)
-                .getMessage().getContentRaw().split(" ")[0].replace("!", "");
-
-        Class<? extends Command> command = find(key).map(Map.Entry::getKey).orElse(null);
-        if (command != null) {
-            try {
-                Command instance = command.getDeclaredConstructor().newInstance();
-                instance.setup(EventType.PRIVATE, privateRouting);
-
-                instance.setup(EventType.GUILD, privateRouting);
-                //instance.processIncomingMessage(privateRouting);
-                return route(instance, privateRouting);
-            } catch (NoSuchMethodException | InstantiationException |
-                    IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+        String key = getKey(privateEvent.getPrivateMessageEvent()
+                .orElseThrow(UnexpectedOutcomeException::new).getMessage());
+        if (key != null) {
+            Class<? extends Command> command = find(key).map(Map.Entry::getKey).orElse(null);
+            if (command != null) {
+                try {
+                    Command instance = command.getDeclaredConstructor().newInstance();
+                    instance.setup(EventType.PRIVATE, privateEvent);
+                    route(instance, privateEvent);
+                    //instance.processIncomingMessage(privateRouting);
+                    return route(instance, privateEvent);
+                } catch (NoSuchMethodException | InstantiationException |
+                        IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return false;

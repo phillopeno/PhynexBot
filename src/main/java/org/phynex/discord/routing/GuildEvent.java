@@ -8,29 +8,29 @@ import java.util.Optional;
 /**
  * Routes the GuildMessage or GuildReaction event to the correct place (Commands, Logging, Etc...)
  */
-public class GuildRouting {
+public class GuildEvent {
 
-    private final RoutingEvent routingEvent;
+    private final EventType eventType;
 
     private final GuildMessageEvent guildMessageEvent;
 
     private final GuildReactionEvent guildReactionEvent;
 
 
-    public GuildRouting(RoutingEvent routingEvent, GuildMessageEvent guildMessageEvent) {
-        this.routingEvent = routingEvent;
+    public GuildEvent(EventType eventType, GuildMessageEvent guildMessageEvent) {
+        this.eventType = eventType;
         this.guildMessageEvent = guildMessageEvent;
         guildReactionEvent = null;
     }
 
-    public GuildRouting(RoutingEvent routingEvent, GuildReactionEvent guildReactionEvent) {
-        this.routingEvent = routingEvent;
+    public GuildEvent(EventType eventType, GuildReactionEvent guildReactionEvent) {
+        this.eventType = eventType;
         this.guildReactionEvent = guildReactionEvent;
         guildMessageEvent = null;
     }
 
-    public RoutingEvent getRoutingEvent() {
-        return routingEvent;
+    public EventType getRoutingEvent() {
+        return eventType;
     }
 
     /**

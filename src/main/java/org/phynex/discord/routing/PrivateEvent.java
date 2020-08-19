@@ -5,28 +5,28 @@ import org.phynex.discord.routing.serializable.PrivateReactionEvent;
 
 import java.util.Optional;
 
-public class PrivateRouting {
+public class PrivateEvent {
 
-    private final RoutingEvent routingEvent;
+    private final EventType eventType;
 
     private final PrivateMessageEvent privateMessageEvent;
 
     private final PrivateReactionEvent privateReactionEvent;
 
-    public PrivateRouting(RoutingEvent routingEvent, PrivateMessageEvent privateMessageEvent) {
-        this.routingEvent = routingEvent;
+    public PrivateEvent(EventType eventType, PrivateMessageEvent privateMessageEvent) {
+        this.eventType = eventType;
         this.privateMessageEvent = privateMessageEvent;
         privateReactionEvent = null;
     }
 
-    public PrivateRouting(RoutingEvent routingEvent, PrivateReactionEvent privateReactionEvent) {
-        this.routingEvent = routingEvent;
+    public PrivateEvent(EventType eventType, PrivateReactionEvent privateReactionEvent) {
+        this.eventType = eventType;
         this.privateReactionEvent = privateReactionEvent;
         privateMessageEvent = null;
     }
 
-    public RoutingEvent getRoutingEvent() {
-        return routingEvent;
+    public EventType getRoutingEvent() {
+        return eventType;
     }
 
     public Optional<PrivateMessageEvent> getPrivateMessageEvent() {

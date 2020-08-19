@@ -6,13 +6,20 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.phynex.discord.routing.EventRouter;
+import org.phynex.discord.routing.EventType;
+import org.phynex.discord.routing.GuildEvent;
 import org.phynex.discord.routing.serializable.GuildMessageEvent;
 
 public class GuildMessageListener extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        new GuildMessageEvent(event.getAuthor(), event.getMember(), event.getMessage());
+        GuildMessageEvent messageEvent = new GuildMessageEvent(
+                event.getAuthor(), event.getMember(), event.getMessage());
+        GuildEvent guildEvent = new GuildEvent(EventType.MESSAGE, messageEvent);
+
+        EventRouter.route(guildEvent);
     }
 
     /**

@@ -3,8 +3,8 @@ package org.phynex.discord.module.commands.impl;
 import org.phynex.discord.module.commands.Command;
 import org.phynex.discord.module.commands.EventType;
 import org.phynex.discord.module.commands.annotations.CommandAnnotation;
-import org.phynex.discord.routing.GuildRouting;
-import org.phynex.discord.routing.PrivateRouting;
+import org.phynex.discord.routing.GuildEvent;
+import org.phynex.discord.routing.PrivateEvent;
 import org.phynex.discord.routing.serializable.GuildMessageEvent;
 
 @CommandAnnotation(
@@ -18,23 +18,27 @@ public class Cleanup extends Command {
     }
 
     @Override
-    public boolean processIncomingMessage(GuildRouting guildRouting) {
-        return false;
+    public boolean processIncomingMessage(GuildEvent guildEvent) {
+        System.out.println("Incoming GuildRoute [MESSAGE]");
+        return true;
     }
 
     @Override
-    public boolean processIncomingMessage(PrivateRouting privateRouting) {
-        return false;
+    public boolean processIncomingMessage(PrivateEvent privateEvent) {
+        System.out.println("Incoming PrivateRoute [MESSAGE]");
+        return true;
     }
 
     @Override
-    public boolean processIncomingReaction(GuildRouting guildRouting) {
-        return false;
+    public boolean processIncomingReaction(GuildEvent guildEvent) {
+        System.out.println("Incoming GuildRoute [REACTION]");
+        return true;
     }
 
     @Override
-    public boolean processIncomingReaction(PrivateRouting privateRouting) {
-        return false;
+    public boolean processIncomingReaction(PrivateEvent privateEvent) {
+        System.out.println("Incoming PrivateRoute [REACTION]");
+        return true;
     }
 
 
