@@ -36,17 +36,17 @@ public abstract class Command {
 
     private PrivateMessageEvent privateMessageEvent;
 
-    protected Command() {
+    public Command() {
 
     }
 
-    protected Command(EventType instanceType, long owner, GuildMessageEvent event) {
+    public Command(EventType instanceType, long owner, GuildMessageEvent event) {
         this.instanceType = instanceType;
         this.owner = owner;
         this.guildMessageEvent = event;
     }
 
-    protected Command(EventType instanceType, long owner, PrivateMessageEvent event) {
+    public Command(EventType instanceType, long owner, PrivateMessageEvent event) {
         this.instanceType = instanceType;
         this.owner = owner;
         this.privateMessageEvent = event;
