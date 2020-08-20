@@ -4,11 +4,10 @@ import net.dv8tion.jda.api.entities.Message;
 import org.phynex.discord.Controller;
 import org.phynex.discord.controller.exceptions.InvalidRequestException;
 import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
-import org.phynex.discord.module.commands.Command;
-import org.phynex.discord.module.commands.EventType;
-import org.phynex.discord.module.commands.annotations.CommandAnnotation;
+import org.phynex.discord.module.annotations.CommandAnnotation;
 import org.phynex.discord.routing.GuildEvent;
 import org.phynex.discord.routing.PrivateEvent;
+import org.phynex.discord.routing.RouteType;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +27,7 @@ public class CommandModule {
     }
 
     private void init() {
-        Reflections reflections = new Reflections("org.phynex.discord.module.commands.impl");
+        Reflections reflections = new Reflections("org.phynex.discord.module.commands");
         Set<Class<? extends Command>> classes = reflections.getSubTypesOf(Command.class);
         commands = classes.stream()
                 .filter(c -> c.isAnnotationPresent(CommandAnnotation.class))
@@ -59,7 +58,7 @@ public class CommandModule {
         }
     }
 
-    public boolean processIncomingMessage(GuildEvent guildEvent) throws InvalidRequestException, UnexpectedOutcomeException {
+    public boolean processIncomingEvent(GuildEvent guildEvent) throws InvalidRequestException, UnexpectedOutcomeException {
         long uid;
         switch (guildEvent.getRoutingEvent()) {
             case MESSAGE:
@@ -81,13 +80,18 @@ public class CommandModule {
                 guildCommandListeners.remove(uid);
                 Controller.debug("[CommandModule] Guild command timed out.");
                 return processCommand(guildEvent);
+            } else if (command.getExpectedResponse() != guildEvent.getRoutingEvent()) {
+                guildCommandListeners.remove(uid);
+                Controller.debug("[CommandModule][PUBLIC] Unexpected response event removed!");
+                guildEvent.sendDefaultMessage("Unexpected Response, please try again later.");
+                return false;
             }
             return route(command, guildEvent);
         }
         return processCommand(guildEvent);
     }
 
-    public boolean processIncomingMessage(PrivateEvent privateEvent) throws InvalidRequestException, UnexpectedOutcomeException {
+    public boolean processIncomingEvent(PrivateEvent privateEvent) throws InvalidRequestException, UnexpectedOutcomeException {
         long uid;
         switch (privateEvent.getRoutingEvent()) {
             case MESSAGE:
@@ -109,6 +113,11 @@ public class CommandModule {
                 privateCommandListeners.remove(uid);
                 Controller.debug("[CommandModule] Private command timed out.");
                 return processCommand(privateEvent);
+            } else if (command.getExpectedResponse() != privateEvent.getRoutingEvent()) {
+                privateCommandListeners.remove(uid);
+                Controller.debug("[CommandModule][PRIVATE] Unexpected response event removed!");
+                privateEvent.sendDefaultMessage("Unexpected Response, please try again later.");
+                return false;
             }
             return route(command, privateEvent);
         }
@@ -140,8 +149,7 @@ public class CommandModule {
             if (command != null) {
                 try {
                     Command instance = command.getDeclaredConstructor().newInstance();
-                    instance.setup(EventType.GUILD, guildEvent);
-                    //instance.processIncomingMessage(guildRouting);
+                    instance.setup(this, EventType.GUILD, guildEvent);
                     return route(instance, guildEvent);
                 } catch (NoSuchMethodException | InstantiationException |
                         IllegalAccessException | InvocationTargetException e) {
@@ -162,9 +170,7 @@ public class CommandModule {
             if (command != null) {
                 try {
                     Command instance = command.getDeclaredConstructor().newInstance();
-                    instance.setup(EventType.PRIVATE, privateEvent);
-                    route(instance, privateEvent);
-                    //instance.processIncomingMessage(privateRouting);
+                    instance.setup(this, EventType.PRIVATE, privateEvent);
                     return route(instance, privateEvent);
                 } catch (NoSuchMethodException | InstantiationException |
                         IllegalAccessException | InvocationTargetException e) {
@@ -178,28 +184,24 @@ public class CommandModule {
     /**
      * Redirect reaction event to command that is listening for it.
      */
-    protected void addGuildReactionListener() {
-
+    protected void addGuildListener(long uid, Command requester) {
+        guildCommandListeners.put(uid, requester);
+        Controller.debug("Listener added! %s", guildCommandListeners.toString());
     }
 
     /**
      * Redirect reaction event to command that is listening for it.
      */
-    protected void addPrivateReactionListener() {
-
+    protected void addPrivateListener(long uid, Command requester) {
+        privateCommandListeners.put(uid, requester);
+        Controller.debug("Listener added! %s", privateCommandListeners.toString());
     }
 
-    /**
-     * Redirect message event to command that is listening for it.
-     */
-    protected void addGuildMessageListener() {
-
+    protected void removeGuildListener(long uid) {
+        guildCommandListeners.remove(uid);
     }
 
-    /**
-     * Redirect message event to command that is listening for it.
-     */
-    protected void addPrivateMessageListener() {
-
+    protected void removePrivateListener(long uid) {
+        privateCommandListeners.remove(uid);
     }
 }

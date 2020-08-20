@@ -1,6 +1,6 @@
 package org.phynex.discord.routing;
 
-public enum EventType {
+public enum RouteType {
 
     MESSAGE, REACTION, CHANNEL
 }

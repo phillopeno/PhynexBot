@@ -7,26 +7,31 @@ import java.util.Optional;
 
 public class PrivateEvent {
 
-    private final EventType eventType;
+    private final RouteType routeType;
 
     private final PrivateMessageEvent privateMessageEvent;
 
     private final PrivateReactionEvent privateReactionEvent;
 
-    public PrivateEvent(EventType eventType, PrivateMessageEvent privateMessageEvent) {
-        this.eventType = eventType;
+    public PrivateEvent(RouteType routeType, PrivateMessageEvent privateMessageEvent) {
+        this.routeType = routeType;
         this.privateMessageEvent = privateMessageEvent;
         privateReactionEvent = null;
     }
 
-    public PrivateEvent(EventType eventType, PrivateReactionEvent privateReactionEvent) {
-        this.eventType = eventType;
+    public PrivateEvent(RouteType routeType, PrivateReactionEvent privateReactionEvent) {
+        this.routeType = routeType;
         this.privateReactionEvent = privateReactionEvent;
         privateMessageEvent = null;
     }
 
-    public EventType getRoutingEvent() {
-        return eventType;
+    public void sendDefaultMessage(String message) {
+        getPrivateMessageEvent().ifPresent(e -> e.getMessage().getPrivateChannel().sendMessage(message).queue());
+        getPrivateReactionEvent().ifPresent(e -> e.getMessage().getPrivateChannel().sendMessage(message).queue());
+    }
+
+    public RouteType getRoutingEvent() {
+        return routeType;
     }
 
     public Optional<PrivateMessageEvent> getPrivateMessageEvent() {

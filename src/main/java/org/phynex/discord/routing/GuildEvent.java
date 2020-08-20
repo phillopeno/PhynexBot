@@ -10,27 +10,32 @@ import java.util.Optional;
  */
 public class GuildEvent {
 
-    private final EventType eventType;
+    private final RouteType routeType;
 
     private final GuildMessageEvent guildMessageEvent;
 
     private final GuildReactionEvent guildReactionEvent;
 
 
-    public GuildEvent(EventType eventType, GuildMessageEvent guildMessageEvent) {
-        this.eventType = eventType;
+    public GuildEvent(RouteType routeType, GuildMessageEvent guildMessageEvent) {
+        this.routeType = routeType;
         this.guildMessageEvent = guildMessageEvent;
         guildReactionEvent = null;
     }
 
-    public GuildEvent(EventType eventType, GuildReactionEvent guildReactionEvent) {
-        this.eventType = eventType;
+    public GuildEvent(RouteType routeType, GuildReactionEvent guildReactionEvent) {
+        this.routeType = routeType;
         this.guildReactionEvent = guildReactionEvent;
         guildMessageEvent = null;
     }
 
-    public EventType getRoutingEvent() {
-        return eventType;
+    public RouteType getRoutingEvent() {
+        return routeType;
+    }
+
+    public void sendDefaultMessage(String message) {
+        getGuildMessageEvent().ifPresent(e -> e.getMessage().getTextChannel().sendMessage(message).queue());
+        getGuildReactionEvent().ifPresent(e -> e.getMessage().getTextChannel().sendMessage(message).queue());
     }
 
     /**

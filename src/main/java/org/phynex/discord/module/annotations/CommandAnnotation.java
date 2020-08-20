@@ -1,4 +1,4 @@
-package org.phynex.discord.module.commands.annotations;
+package org.phynex.discord.module.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

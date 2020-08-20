@@ -1,5 +1,9 @@
 package org.phynex.discord.routing;
 
+import org.phynex.discord.Controller;
+import org.phynex.discord.controller.exceptions.InvalidRequestException;
+import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
+
 public class EventRouter {
 
     /**
@@ -34,13 +38,33 @@ public class EventRouter {
      * Guild Routing
      */
     private void guild() {
-
+        //Check to see if it's a command:
+        try {
+            if (guildEvent != null) {
+                if (Controller.getSession().getCommandModule().processIncomingEvent(guildEvent))
+                    return;
+            }
+        } catch (InvalidRequestException | UnexpectedOutcomeException e) {
+            Controller.debug(e.getMessage());
+            return;
+        }
+        Controller.debug("Guild route has finished, no command was utilized.");
     }
 
     /**
      * Private Routing
      */
     private void direct() {
-
+        //Check to see if it's a command:
+        try {
+            if (privateEvent != null) {
+                if (Controller.getSession().getCommandModule().processIncomingEvent(privateEvent))
+                    return;
+            }
+        } catch (InvalidRequestException | UnexpectedOutcomeException e) {
+            Controller.debug(e.getMessage());
+            return;
+        }
+        Controller.debug("Private route has finished, no command was utilized.");
     }
 }
