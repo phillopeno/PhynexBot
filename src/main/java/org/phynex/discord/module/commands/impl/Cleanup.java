@@ -1,17 +1,15 @@
-package org.phynex.discord.module.commands;
+package org.phynex.discord.module.commands.impl;
 
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import org.phynex.discord.Controller;
 import org.phynex.discord.controller.Constants;
-import org.phynex.discord.module.Command;
 import org.phynex.discord.module.annotations.CommandAnnotation;
+import org.phynex.discord.module.commands.Command;
 import org.phynex.discord.routing.GuildEvent;
 import org.phynex.discord.routing.PrivateEvent;
 import org.phynex.discord.routing.RouteType;
 
-import javax.naming.ldap.Control;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;

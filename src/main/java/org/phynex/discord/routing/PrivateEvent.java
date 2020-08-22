@@ -1,5 +1,6 @@
 package org.phynex.discord.routing;
 
+import net.dv8tion.jda.api.entities.PrivateChannel;
 import org.phynex.discord.routing.serializable.PrivateMessageEvent;
 import org.phynex.discord.routing.serializable.PrivateReactionEvent;
 
@@ -40,5 +41,13 @@ public class PrivateEvent {
 
     public Optional<PrivateReactionEvent> getPrivateReactionEvent() {
         return Optional.ofNullable(privateReactionEvent);
+    }
+
+    public PrivateChannel getChannel() {
+        if (privateMessageEvent != null)
+            return privateMessageEvent.getMessage().getPrivateChannel();
+        else if (privateReactionEvent != null)
+            return privateReactionEvent.getMessage().getPrivateChannel();
+        return null;
     }
 }

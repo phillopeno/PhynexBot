@@ -1,7 +1,8 @@
-package org.phynex.discord.module;
+package org.phynex.discord.module.commands;
 
 import org.phynex.discord.controller.exceptions.InvalidRequestException;
 import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
+import org.phynex.discord.module.EventType;
 import org.phynex.discord.routing.GuildEvent;
 import org.phynex.discord.routing.PrivateEvent;
 import org.phynex.discord.routing.RouteType;

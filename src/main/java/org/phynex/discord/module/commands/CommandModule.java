@@ -1,13 +1,13 @@
-package org.phynex.discord.module;
+package org.phynex.discord.module.commands;
 
 import net.dv8tion.jda.api.entities.Message;
 import org.phynex.discord.Controller;
 import org.phynex.discord.controller.exceptions.InvalidRequestException;
 import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
+import org.phynex.discord.module.EventType;
 import org.phynex.discord.module.annotations.CommandAnnotation;
 import org.phynex.discord.routing.GuildEvent;
 import org.phynex.discord.routing.PrivateEvent;
-import org.phynex.discord.routing.RouteType;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
@@ -23,11 +23,10 @@ public class CommandModule {
     public CommandModule() {
         this.guildCommandListeners = new HashMap<>();
         this.privateCommandListeners = new HashMap<>();
-        init();
     }
 
-    private void init() {
-        Reflections reflections = new Reflections("org.phynex.discord.module.commands");
+    public void fetchCommands() {
+        Reflections reflections = new Reflections("org.phynex.discord.module.commands.impl");
         Set<Class<? extends Command>> classes = reflections.getSubTypesOf(Command.class);
         commands = classes.stream()
                 .filter(c -> c.isAnnotationPresent(CommandAnnotation.class))

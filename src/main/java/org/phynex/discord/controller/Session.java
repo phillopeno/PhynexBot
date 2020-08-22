@@ -5,13 +5,13 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import org.phynex.discord.Controller;
 import org.phynex.discord.listener.GuildMessageListener;
 import org.phynex.discord.listener.GuildReactionListener;
 import org.phynex.discord.listener.PrivateMessageListener;
 import org.phynex.discord.listener.PrivateMessageReactionListener;
-import org.phynex.discord.module.CommandModule;
-import org.phynex.discord.module.GameModule;
+import org.phynex.discord.module.commands.CommandModule;
+import org.phynex.discord.module.dialogues.DialogueModule;
+import org.phynex.discord.module.games.GameModule;
 
 import javax.security.auth.login.LoginException;
 
@@ -21,6 +21,7 @@ public class Session {
 
     private CommandModule commandModule;
     private GameModule gameModule;
+    private DialogueModule dialogueModule;
 
     /**
      * todo some type of reflection solution to make this dynamically pull from events package
@@ -66,12 +67,13 @@ public class Session {
     }
 
     private void initializeModules() {
-        Controller.debug("Loading Command Module...");
         commandModule = new CommandModule();
-        Controller.debug("Command Module Loaded.");
-        Controller.debug("Loading Game Module...");
+        commandModule.fetchCommands();
+
         gameModule = new GameModule();
-        Controller.debug("Game Module Loaded.");
+
+        dialogueModule = new DialogueModule();
+        dialogueModule.fetchDialogues();
     }
 
     public CommandModule getCommandModule() {
@@ -80,6 +82,10 @@ public class Session {
 
     public GameModule getGameModule() {
         return gameModule;
+    }
+
+    public DialogueModule getDialogueModule() {
+        return dialogueModule;
     }
 
     public JDA getAPI() {
