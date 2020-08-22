@@ -1,7 +1,11 @@
 package org.phynex.discord.routing;
 
+import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.phynex.discord.routing.serializable.GuildMessageEvent;
 import org.phynex.discord.routing.serializable.GuildReactionEvent;
+import org.phynex.discord.routing.serializable.PrivateMessageEvent;
+import org.phynex.discord.routing.serializable.PrivateReactionEvent;
 
 import java.util.Optional;
 
@@ -54,5 +58,21 @@ public class GuildEvent {
      */
     public Optional<GuildReactionEvent> getGuildReactionEvent() {
         return Optional.ofNullable(guildReactionEvent);
+    }
+
+    public GuildMessageEvent getMessageEvent() {
+        return guildMessageEvent;
+    }
+
+    public GuildReactionEvent getReactionEvent() {
+        return guildReactionEvent;
+    }
+
+    public TextChannel getChannel() {
+        if (guildMessageEvent != null)
+            return guildMessageEvent.getMessage().getTextChannel();
+        else if (guildReactionEvent != null)
+            return guildReactionEvent.getMessage().getTextChannel();
+        return null;
     }
 }

@@ -1,5 +1,9 @@
 package org.phynex.discord.module.dialogues;
 
+import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
+import org.phynex.discord.routing.GuildEvent;
+import org.phynex.discord.routing.PrivateEvent;
+
 import java.util.HashMap;
 
 public class DialogueModule {
@@ -27,5 +31,35 @@ public class DialogueModule {
             privateDialogues.put(uid, dialogue);
     }
 
-    //public boolean isHandled TODO handle incoming message, reaction for guild, private
+    public void remove(boolean guild, Dialogue dialogue) {
+        if (guild) {
+            guildDialogues.remove(dialogue.getUser());
+        } else {
+            privateDialogues.remove(dialogue.getUser());
+        }
+    }
+
+    public boolean handledDialogue(GuildEvent guildEvent) {
+        /**
+         * TODO
+         */
+        return false;
+    }
+
+    public boolean handledDialogue(PrivateEvent privateEvent) {
+        Dialogue retrieved = privateDialogues.get(privateEvent.getChannel().getUser().getIdLong());
+        if (retrieved != null) {
+            switch (privateEvent.getRoutingEvent()) {
+                case MESSAGE:
+                    return retrieved.load(privateEvent.getChannel())
+                            .processIncomingMessage(privateEvent.getMessageEvent());
+                case REACTION:
+                    return retrieved.load(privateEvent.getChannel())
+                            .processIncomingReaction(privateEvent.getReactionEvent());
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
 }

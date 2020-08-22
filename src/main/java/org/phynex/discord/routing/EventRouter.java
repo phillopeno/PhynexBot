@@ -1,8 +1,11 @@
 package org.phynex.discord.routing;
 
 import org.phynex.discord.Controller;
+import org.phynex.discord.controller.Constants;
 import org.phynex.discord.controller.exceptions.InvalidRequestException;
 import org.phynex.discord.controller.exceptions.UnexpectedOutcomeException;
+
+import javax.naming.ldap.Control;
 
 public class EventRouter {
 
@@ -59,6 +62,8 @@ public class EventRouter {
         try {
             if (privateEvent != null) {
                 if (Controller.getSession().getCommandModule().processIncomingEvent(privateEvent))
+                    return;
+                else if (Controller.getSession().getDialogueModule().handledDialogue(privateEvent))
                     return;
             }
         } catch (InvalidRequestException | UnexpectedOutcomeException e) {

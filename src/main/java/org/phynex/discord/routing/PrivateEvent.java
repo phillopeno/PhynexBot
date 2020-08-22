@@ -43,6 +43,14 @@ public class PrivateEvent {
         return Optional.ofNullable(privateReactionEvent);
     }
 
+    public PrivateMessageEvent getMessageEvent() {
+        return privateMessageEvent;
+    }
+
+    public PrivateReactionEvent getReactionEvent() {
+        return privateReactionEvent;
+    }
+
     public PrivateChannel getChannel() {
         if (privateMessageEvent != null)
             return privateMessageEvent.getMessage().getPrivateChannel();

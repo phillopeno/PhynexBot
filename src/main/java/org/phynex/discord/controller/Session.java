@@ -73,7 +73,6 @@ public class Session {
         gameModule = new GameModule();
 
         dialogueModule = new DialogueModule();
-        dialogueModule.fetchDialogues();
     }
 
     public CommandModule getCommandModule() {

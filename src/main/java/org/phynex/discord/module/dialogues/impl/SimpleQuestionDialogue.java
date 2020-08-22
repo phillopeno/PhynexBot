@@ -2,6 +2,7 @@ package org.phynex.discord.module.dialogues.impl;
 
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.phynex.discord.Controller;
 import org.phynex.discord.controller.Constants;
 import org.phynex.discord.module.dialogues.Dialogue;
 import org.phynex.discord.routing.serializable.GuildMessageEvent;
@@ -44,9 +45,11 @@ public class SimpleQuestionDialogue extends Dialogue {
         switch (reactionCode) {
             case Constants.UNI_CHECK:
                 consumer.accept(true);
+                Controller.getSession().getDialogueModule().remove(validate(textChannel), this);
                 return true;
             case Constants.UNI_X:
                 consumer.accept(false);
+                Controller.getSession().getDialogueModule().remove(validate(textChannel), this);
                 return true;
             default:
                 return false;

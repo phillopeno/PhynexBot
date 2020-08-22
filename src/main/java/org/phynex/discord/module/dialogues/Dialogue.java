@@ -29,6 +29,16 @@ public abstract class Dialogue {
         this.privateChannel = privateChannel;
     }
 
+    public Dialogue load(TextChannel textChannel) {
+        this.textChannel = textChannel;
+        return this;
+    }
+
+    public Dialogue load(PrivateChannel privateChannel) {
+        this.privateChannel = privateChannel;
+        return this;
+    }
+
     public abstract boolean processIncomingMessage(GuildMessageEvent event);
 
     public abstract boolean processIncomingMessage(PrivateMessageEvent event);
@@ -72,6 +82,10 @@ public abstract class Dialogue {
                             .forEach(r -> c.addReaction(r).queue()));
         }
 
+    }
+
+    public long getUser() {
+        return validate(privateChannel) ? privateChannel.getUser().getIdLong() : -1;//todo
     }
 
 }

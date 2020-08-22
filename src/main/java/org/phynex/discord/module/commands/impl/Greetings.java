@@ -1,6 +1,7 @@
 package org.phynex.discord.module.commands.impl;
 
 import net.dv8tion.jda.api.entities.PrivateChannel;
+import org.phynex.discord.Controller;
 import org.phynex.discord.module.annotations.CommandAnnotation;
 import org.phynex.discord.module.commands.Command;
 import org.phynex.discord.module.dialogues.impl.SimpleQuestionDialogue;
@@ -21,13 +22,17 @@ public class Greetings extends Command {
         //reply("WAZZUPPPPP");
         PrivateChannel channel;
         if ((channel = privateEvent.getChannel()) != null) {
-            new SimpleQuestionDialogue("Simple Question Test!", channel, b -> {
-                if (b) {
-                    System.out.println("RESULT WAS TRUE!");
-                } else {
-                    System.out.println("RESULT WAS FALSE!");
-                }
-            });
+            Controller.getSession().getDialogueModule().putSafely(
+                    privateEvent.getMessageEvent().getUser().getIdLong(),
+                    new SimpleQuestionDialogue("Simple Question Test!", channel, b -> {
+                        if (b) {
+                            System.out.println("RESULT WAS TRUE!");
+                        } else {
+                            System.out.println("RESULT WAS FALSE!");
+                        }
+                    }),
+                    false
+            );
         }
         return true;
     }
